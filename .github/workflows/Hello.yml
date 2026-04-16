@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-copilot-coding-agent
+    runs-on: ubuntu-cca-77785908-7ef3-498a-9ae0-bbebb95125d3
     steps:
       - name: Echo
         run: echo Hello
