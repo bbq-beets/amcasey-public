@@ -7,5 +7,32 @@ jobs:
   build:
     runs-on: ubuntu-24.04-canary
     steps:
+      - name: Boot timing summary
+        run: systemd-analyze
+
+      - name: Boot blame (per-unit)
+        run: systemd-analyze blame
+
+      - name: Boot critical chain
+        run: systemd-analyze critical-chain
+
+      - name: Cloud-init analyze
+        run: cloud-init analyze show 2>&1 || true
+
+      - name: Cloud-init blame
+        run: cloud-init analyze blame 2>&1 || true
+
+      - name: Cloud-init log
+        run: sudo cat /var/log/cloud-init.log 2>/dev/null || echo "Not found"
+
+      - name: Cloud-init output log
+        run: sudo cat /var/log/cloud-init-output.log 2>/dev/null || echo "Not found"
+
+      - name: Azure guest agent log
+        run: sudo cat /var/log/waagent.log 2>/dev/null || echo "Not found"
+
+      - name: Journal (boot)
+        run: journalctl -b --no-pager | tail -500
+
       - name: Echo
         run: echo Hello
