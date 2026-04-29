@@ -7,7 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-
       - name: man-db service unit file
         run: systemctl cat man-db.service 2>/dev/null || echo "not found"
 
@@ -50,3 +49,43 @@ jobs:
         run: |
           docker version
           docker info 2>&1 | head -50
+
+      - name: Generate boot plot
+        run: systemd-analyze plot > /tmp/boot-plot.svg
+
+      - name: Upload boot plot
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-timeline
+          path: /tmp/boot-plot.svg
+        
+      - name: phpsessionclean service unit
+        run: systemctl cat phpsessionclean.service
+
+      - name: phpsessionclean script
+        run: cat /usr/lib/php/sessionclean 2>/dev/null || cat /usr/sbin/phpsessionclean 2>/dev/null || echo "not found"
+
+      - name: PHP session config and dirs
+        run: |
+          grep -r session.save_path /etc/php/ 2>/dev/null || echo "no config found"
+          grep -r session.gc_ /etc/php/ 2>/dev/null || echo "no gc config"
+          for d in /var/lib/php/sessions /tmp; do
+            echo "=== $d ==="
+            ls -la "$d" 2>/dev/null | head -20
+            find "$d" -name "sess_*" 2>/dev/null | wc -l
+          done
+
+      - name: phpsessionclean journal
+        run: journalctl -u phpsessionclean.service -b --no-pager
+
+      - name: iptables rule count
+        run: |
+          sudo iptables-save 2>/dev/null | wc -l
+          sudo ip6tables-save 2>/dev/null | wc -l
+          sudo nft list ruleset 2>/dev/null | wc -l
+
+      - name: Docker images and layers
+        run: |
+          docker images --all
+          sudo ls /var/lib/docker/overlay2/ | wc -l
+          sudo du -sh /var/lib/docker/
