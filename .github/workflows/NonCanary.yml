@@ -80,3 +80,37 @@ jobs:
           docker images --all
           sudo ls /var/lib/docker/overlay2/ | wc -l
           sudo du -sh /var/lib/docker/
+          
+      - name: Kernel version comparison
+        run: uname -r
+      
+      - name: IO scheduler
+        run: |
+          cat /sys/block/sda/queue/scheduler 2>/dev/null || echo "no sda"
+          cat /sys/block/nvme0n1/queue/scheduler 2>/dev/null || echo "no nvme"
+          cat /sys/block/*/queue/scheduler
+      
+      - name: Hosted Compute Agent logs
+        run: |
+          sudo journalctl -b --no-pager -t hosted-compute-agent 2>/dev/null | head -100
+          sudo find / -path "*/hosted-compute*" -name "*.log" 2>/dev/null | head -10 | xargs -I{} sh -c 'echo "=== {} ==="; head -50 "{}"'
+      
+      - name: All processes sorted by start time
+        run: ps -eo pid,lstart,etime,comm --sort=start_time | head -80
+      
+      - name: Disk I/O stats from boot
+        run: |
+          cat /proc/diskstats
+          echo "---"
+          iostat -x 1 1 2>/dev/null || echo "iostat not available"
+      
+      - name: Non-service processes during boot (from journal)
+        run: |
+          journalctl -b --no-pager -p info | grep -iE "provisioner|agent|setup|configure" | head -50
+      
+      - name: Systemd generators and early boot
+        run: |
+          systemd-analyze time
+          systemd-analyze log-level 2>/dev/null || true
+          ls /etc/systemd/system/*.service.d/ 2>/dev/null
+          ls /run/systemd/generator*/ 2>/dev/null
