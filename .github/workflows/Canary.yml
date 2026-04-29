@@ -58,3 +58,12 @@ jobs:
         run: |
           docker version
           docker info 2>&1 | head -50
+
+      - name: Generate boot plot
+        run: systemd-analyze plot > /tmp/boot-plot.svg
+
+      - name: Upload boot plot
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-timeline
+          path: /tmp/boot-plot.svg
