@@ -7,14 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - name: Boot timing summary
-        run: systemd-analyze
-
-      - name: Boot blame (per-unit)
-        run: systemd-analyze blame
-
-      - name: Boot critical chain
-        run: systemd-analyze critical-chain
 
       - name: man-db service unit file
         run: systemctl cat man-db.service 2>/dev/null || echo "not found"
