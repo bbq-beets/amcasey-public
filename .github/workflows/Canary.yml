@@ -89,9 +89,9 @@ jobs:
 
       - name: iptables rule count
         run: |
-          iptables-save 2>/dev/null | wc -l
-          ip6tables-save 2>/dev/null | wc -l
-          nft list ruleset 2>/dev/null | wc -l
+          sudo iptables-save 2>/dev/null | wc -l
+          sudo ip6tables-save 2>/dev/null | wc -l
+          sudo nft list ruleset 2>/dev/null | wc -l
 
       - name: Docker images and layers
         run: |
