@@ -121,14 +121,3 @@ jobs:
           cat /proc/diskstats
           echo "---"
           iostat -x 1 1 2>/dev/null || echo "iostat not available"
-      
-      - name: Non-service processes during boot (from journal)
-        run: |
-          journalctl -b --no-pager -p info | grep -iE "provisioner|agent|setup|configure" | head -50
-      
-      - name: Systemd generators and early boot
-        run: |
-          systemd-analyze time
-          systemd-analyze log-level 2>/dev/null || true
-          ls /etc/systemd/system/*.service.d/ 2>/dev/null
-          ls /run/systemd/generator*/ 2>/dev/null
