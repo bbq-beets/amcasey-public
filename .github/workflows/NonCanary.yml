@@ -1,4 +1,4 @@
-name: Ubuntu Non-Canary
+name: Ubuntu Canary
 
 on:
   workflow_dispatch:
@@ -16,23 +16,42 @@ jobs:
       - name: Boot critical chain
         run: systemd-analyze critical-chain
 
-      - name: Cloud-init analyze
-        run: cloud-init analyze show 2>&1 || true
+      - name: man-db service unit file
+        run: systemctl cat man-db.service 2>/dev/null || echo "not found"
 
-      - name: Cloud-init blame
-        run: cloud-init analyze blame 2>&1 || true
+      - name: man-db trigger info
+        run: |
+          systemctl show man-db.service --property=WantedBy,RequiredBy,TriggeredBy,After,Before,Wants
+          echo "---"
+          ls -la /var/lib/man-db/auto-update 2>/dev/null || echo "no auto-update flag"
+          systemctl list-dependencies man-db.service --reverse
 
-      - name: Cloud-init log
-        run: sudo cat /var/log/cloud-init.log 2>/dev/null || echo "Not found"
+      - name: man-db journal
+        run: journalctl -u man-db.service -b --no-pager
 
-      - name: Cloud-init output log
-        run: sudo cat /var/log/cloud-init-output.log 2>/dev/null || echo "Not found"
+      - name: man-db cache stats
+        run: |
+          ls -la /var/cache/man/
+          find /usr/share/man -name "*.gz" | wc -l
+          stat /var/cache/man/index.db 2>/dev/null || echo "no pre-built cache"
 
-      - name: Azure guest agent log
-        run: sudo cat /var/log/waagent.log 2>/dev/null || echo "Not found"
+      - name: Docker service unit and drop-ins
+        run: systemctl cat docker.service
 
-      - name: Journal (boot)
-        run: journalctl -b --no-pager | tail -500
+      - name: Docker service dependencies
+        run: systemctl show docker.service --property=After,Before,Wants,Requires,TriggeredBy
 
-      - name: Echo
-        run: echo Hello
+      - name: Docker journal
+        run: journalctl -u docker.service -b --no-pager
+
+      - name: Containerd journal
+        run: journalctl -u containerd.service -b --no-pager
+
+      - name: Docker daemon config
+        run: cat /etc/docker/daemon.json 2>/dev/null || echo "no daemon.json"
+
+      - name: Docker version and info
+        run: |
+          docker version
+          docker info 2>&1 | head -50
+        
