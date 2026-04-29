@@ -24,7 +24,11 @@ jobs:
           systemctl show man-db.service --property=WantedBy,RequiredBy,TriggeredBy,After,Before,Wants
           echo "---"
           ls -la /var/lib/man-db/auto-update 2>/dev/null || echo "no auto-update flag"
+          echo "---"
           systemctl list-dependencies man-db.service --reverse
+
+      - name: man-db auto-update debconf
+        run: debconf-show man-db | grep auto-update
 
       - name: man-db journal
         run: journalctl -u man-db.service -b --no-pager
@@ -54,4 +58,3 @@ jobs:
         run: |
           docker version
           docker info 2>&1 | head -50
-        
