@@ -1,4 +1,4 @@
-name: Ubuntu Canary
+name: Ubuntu Non-Canary
 
 on:
   workflow_dispatch:
