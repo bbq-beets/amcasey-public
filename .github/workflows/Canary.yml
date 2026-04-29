@@ -67,3 +67,22 @@ jobs:
         with:
           name: boot-timeline
           path: /tmp/boot-plot.svg
+        
+      - name: phpsessionclean service unit
+        run: systemctl cat phpsessionclean.service
+
+      - name: phpsessionclean script
+        run: cat /usr/lib/php/sessionclean 2>/dev/null || cat /usr/sbin/phpsessionclean 2>/dev/null || echo "not found"
+
+      - name: PHP session config and dirs
+        run: |
+          grep -r session.save_path /etc/php/ 2>/dev/null || echo "no config found"
+          grep -r session.gc_ /etc/php/ 2>/dev/null || echo "no gc config"
+          for d in /var/lib/php/sessions /tmp; do
+            echo "=== $d ==="
+            ls -la "$d" 2>/dev/null | head -20
+            find "$d" -name "sess_*" 2>/dev/null | wc -l
+          done
+
+      - name: phpsessionclean journal
+        run: journalctl -u phpsessionclean.service -b --no-pager
