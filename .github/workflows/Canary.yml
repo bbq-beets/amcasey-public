@@ -86,3 +86,15 @@ jobs:
 
       - name: phpsessionclean journal
         run: journalctl -u phpsessionclean.service -b --no-pager
+
+      - name: iptables rule count
+        run: |
+          iptables-save 2>/dev/null | wc -l
+          ip6tables-save 2>/dev/null | wc -l
+          nft list ruleset 2>/dev/null | wc -l
+
+      - name: Docker images and layers
+        run: |
+          docker images --all
+          ls /var/lib/docker/overlay2/ | wc -l
+          du -sh /var/lib/docker/
