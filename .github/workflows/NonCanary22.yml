@@ -1,0 +1,22 @@
+name: Ubuntu Non-Canary 22
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Boot blame (per-unit)
+        run: systemd-analyze blame
+
+      - name: Boot critical chain
+        run: systemd-analyze critical-chain
+
+      - name: Docker version
+        run: |
+          docker version
+          docker info 2>&1
+
+      - name: Packages
+        run: dpkg-query -W -f '${Package}\t${Version}\n'
